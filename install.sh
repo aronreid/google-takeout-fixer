@@ -122,30 +122,69 @@ case $INSTALL_MODE in
     venv)
         echo "Installing in a virtual environment..."
         
-        # Check if venv module is available
+        # Check if venv module is available and try to install it if needed
         if ! python3 -c "import venv" &> /dev/null; then
             echo "Python venv module not found. Trying to install it..."
+            
             if command -v apt-get &> /dev/null; then
+                echo "Detected apt package manager. Installing python3-venv..."
                 sudo apt-get update
-                sudo apt-get install -y python3-venv
+                
+                # Try to install the specific version first
+                PYTHON_MINOR=$(python3 -c 'import sys; print(sys.version_info.minor)')
+                if ! sudo apt-get install -y python3.$PYTHON_MINOR-venv; then
+                    echo "Failed to install python3.$PYTHON_MINOR-venv, trying generic python3-venv..."
+                    if ! sudo apt-get install -y python3-venv; then
+                        echo "Failed to install python3-venv. Trying to install python3-full..."
+                        if ! sudo apt-get install -y python3-full; then
+                            echo "Error: Failed to install required packages for virtual environment."
+                            echo "Please install them manually:"
+                            echo "    sudo apt install python3-venv python3-full"
+                            echo "Or try a different installation mode:"
+                            echo "    ./install.sh --user"
+                            exit 1
+                        fi
+                    fi
+                fi
             else
                 echo "Error: Python venv module is not available and couldn't be installed automatically."
                 echo "Please install it manually or try a different installation mode."
                 exit 1
             fi
+            
+            # Verify venv is now available
+            if ! python3 -c "import venv" &> /dev/null; then
+                echo "Error: Python venv module is still not available after installation attempts."
+                echo "Please try installing it manually or use a different installation mode."
+                exit 1
+            fi
         fi
         
-        # Create and activate virtual environment
+        # Create virtual environment
         echo "Creating virtual environment..."
-        python3 -m venv venv
+        if ! python3 -m venv venv; then
+            echo "Error: Failed to create virtual environment despite having the venv module."
+            echo "This might be due to missing additional packages or permissions issues."
+            echo "Please try a different installation mode:"
+            echo "    ./install.sh --user"
+            exit 1
+        fi
         
         # Activate virtual environment
         echo "Activating virtual environment..."
+        if [ ! -f venv/bin/activate ]; then
+            echo "Error: Virtual environment activation script not found."
+            echo "The virtual environment may not have been created correctly."
+            exit 1
+        fi
         source venv/bin/activate
         
         # Update pip in the virtual environment
         echo "Updating pip in virtual environment..."
-        pip install --upgrade pip
+        if ! pip install --upgrade pip; then
+            echo "Error: Failed to update pip in virtual environment."
+            echo "Continuing with installation anyway..."
+        fi
         
         # Install the package in the virtual environment
         install_package ""

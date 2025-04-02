@@ -215,10 +215,20 @@ The installation scripts will automatically detect and use the appropriate comma
 If you encounter an error message like "This environment is externally managed" when running the installation script, it means your Python environment is managed by the system package manager (common on Linux distributions like Ubuntu). You have several options:
 
 1. **Use a virtual environment (recommended):**
+   
+   On Debian/Ubuntu systems, you may need to install the python3-venv package first:
+   ```bash
+   sudo apt install python3-venv
+   # Or for a specific Python version:
+   sudo apt install python3.11-venv  # Replace with your Python version
+   # You may also need:
+   sudo apt install python3-full
+   ```
+   
+   Then create and use the virtual environment:
    ```bash
    ./install.sh --venv
    ```
-   This creates an isolated environment for the tool and its dependencies.
    
    After installation, you'll need to activate the environment before using the tool:
    ```bash
