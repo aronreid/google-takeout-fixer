@@ -1,60 +1,5 @@
 #!/bin/bash
-# Installation script for Google Takeout Fixer
-
-# Function to display help
-show_help() {
-    echo "Google Takeout Fixer Installation Script"
-    echo ""
-    echo "Usage: ./install.sh [OPTIONS]"
-    echo ""
-    echo "Options:"
-    echo "  -h, --help       Show this help message and exit"
-    echo "  -v, --venv       Install in a virtual environment (recommended)"
-    echo "  -u, --user       Install in user space (using pip --user flag)"
-    echo "  -s, --system     Attempt system-wide installation (may require sudo)"
-    echo ""
-    echo "This script installs the Google Takeout Fixer tool as a Python package,"
-    echo "making it available as both a command-line utility and a Python module."
-    echo ""
-    echo "After installation, you can use the tool by running:"
-    echo "  google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>"
-    echo "Or directly with:"
-    echo "  python main.py -i <input_dir> -o <output_dir> -e <error_dir>"
-    echo ""
-    echo "For more information, see the README.md file."
-}
-
-# Default installation mode
-INSTALL_MODE="venv"
-
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        -v|--venv)
-            INSTALL_MODE="venv"
-            shift
-            ;;
-        -u|--user)
-            INSTALL_MODE="user"
-            shift
-            ;;
-        -s|--system)
-            INSTALL_MODE="system"
-            shift
-            ;;
-        *)
-            # Unknown option
-            echo "Unknown option: $1"
-            echo "Use -h or --help to see available options."
-            exit 1
-            ;;
-    esac
-    shift
-done
+# Simple installation script for Google Takeout Fixer
 
 echo "Installing Google Takeout Fixer..."
 
@@ -80,189 +25,45 @@ else
     exit 1
 fi
 
-# Function to install dependencies with apt
-install_with_apt() {
-    echo "Attempting to install dependencies with apt..."
-    sudo apt-get update
-    sudo apt-get install -y python3-piexif python3-tqdm python3-colorama
-    echo "Dependencies installed with apt."
-}
+# Install dependencies
+echo "Installing dependencies..."
+if ! $PIP_CMD install -r requirements.txt; then
+    echo ""
+    echo "Error: Failed to install dependencies."
+    echo ""
+    echo "If you're seeing 'externally managed environment' errors on Debian/Ubuntu:"
+    echo ""
+    echo "Option 1: Install dependencies with apt (recommended):"
+    echo "    sudo apt install python3-piexif python3-tqdm python3-colorama"
+    echo ""
+    echo "Option 2: Force pip installation (use with caution):"
+    echo "    $PIP_CMD install --break-system-packages -r requirements.txt"
+    echo ""
+    exit 1
+fi
 
-# Function to install the package
-install_package() {
-    local pip_args=$1
-    
-    # Install dependencies first
-    echo "Installing dependencies..."
-    $PIP_CMD install $pip_args -r requirements.txt
-    
-    # Check if installation was successful
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to install dependencies."
-        echo "If you're seeing 'externally managed environment' errors, try one of these options:"
-        echo "1. Run with -v/--venv to use a virtual environment (recommended)"
-        echo "2. Run with -u/--user to install in user space"
-        echo "3. Install dependencies with your system package manager:"
-        echo "   sudo apt install python3-piexif python3-tqdm python3-colorama"
-        exit 1
-    fi
-    
-    # Install the package
-    echo "Installing the package..."
-    $PIP_CMD install $pip_args -e .
-    
-    # Check if installation was successful
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to install the package."
-        exit 1
-    fi
-}
+# Install the package
+echo "Installing the package..."
+if ! $PIP_CMD install -e .; then
+    echo ""
+    echo "Error: Failed to install the package."
+    echo ""
+    echo "If you're seeing 'externally managed environment' errors on Debian/Ubuntu:"
+    echo ""
+    echo "Option 1: Install the package with apt if available"
+    echo ""
+    echo "Option 2: Force pip installation (use with caution):"
+    echo "    $PIP_CMD install --break-system-packages -e ."
+    echo ""
+    exit 1
+fi
 
-case $INSTALL_MODE in
-    venv)
-        echo "Installing in a virtual environment..."
-        
-        # Check for required packages for virtual environment
-        PYTHON_MAJOR=$(python3 -c 'import sys; print(sys.version_info.major)')
-        PYTHON_MINOR=$(python3 -c 'import sys; print(sys.version_info.minor)')
-        PYTHON_VERSION="$PYTHON_MAJOR.$PYTHON_MINOR"
-        
-        echo "Checking for required packages for Python $PYTHON_VERSION virtual environment..."
-        
-        # Check if we can create a virtual environment
-        if ! python3 -m venv --help &> /dev/null || ! python3 -c "import ensurepip" &> /dev/null; then
-            echo "Python virtual environment packages are missing."
-            
-            if command -v apt-get &> /dev/null; then
-                echo "Detected apt package manager. Installing required packages..."
-                sudo apt-get update
-                
-                echo "Installing python$PYTHON_VERSION-venv and python3-full..."
-                if ! sudo apt-get install -y python$PYTHON_VERSION-venv python3-full; then
-                    echo "Failed to install specific version packages."
-                    echo "Trying generic packages..."
-                    if ! sudo apt-get install -y python3-venv python3-full; then
-                        echo ""
-                        echo "ERROR: Failed to install required packages for virtual environment."
-                        echo ""
-                        echo "Please install them manually with:"
-                        echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
-                        echo ""
-                        echo "Or try installing in user space instead:"
-                        echo "    ./install.sh --user"
-                        echo ""
-                        exit 1
-                    fi
-                fi
-                
-                echo "Required packages installed. Proceeding with virtual environment creation."
-            else
-                echo ""
-                echo "ERROR: Required packages for virtual environment are not available."
-                echo ""
-                echo "On Debian/Ubuntu systems, install them with:"
-                echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
-                echo ""
-                echo "Or try installing in user space instead:"
-                echo "    ./install.sh --user"
-                echo ""
-                exit 1
-            fi
-        fi
-        
-        # Create virtual environment
-        echo "Creating virtual environment..."
-        if ! python3 -m venv venv; then
-            echo ""
-            echo "ERROR: Failed to create virtual environment."
-            echo ""
-            echo "This might be due to missing packages or permissions issues."
-            echo ""
-            echo "On Debian/Ubuntu systems, make sure you have installed:"
-            echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
-            echo ""
-            echo "Alternatively, try installing in user space instead:"
-            echo "    ./install.sh --user"
-            echo ""
-            exit 1
-        fi
-        
-        # Activate virtual environment
-        echo "Activating virtual environment..."
-        if [ ! -f venv/bin/activate ]; then
-            echo "Error: Virtual environment activation script not found."
-            echo "The virtual environment may not have been created correctly."
-            exit 1
-        fi
-        source venv/bin/activate
-        
-        # Update pip in the virtual environment
-        echo "Updating pip in virtual environment..."
-        if ! pip install --upgrade pip; then
-            echo "Error: Failed to update pip in virtual environment."
-            echo "Continuing with installation anyway..."
-        fi
-        
-        # Install the package in the virtual environment
-        install_package ""
-        
-        echo "Installation complete in virtual environment!"
-        echo "To use the tool, you need to activate the virtual environment first:"
-        echo "  source venv/bin/activate"
-        echo "Then you can run:"
-        echo "  google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>"
-        echo "Or directly with:"
-        echo "  python main.py -i <input_dir> -o <output_dir> -e <error_dir>"
-        ;;
-        
-    user)
-        echo "Installing in user space..."
-        install_package "--user"
-        
-        echo "Installation complete in user space!"
-        echo "Make sure your user bin directory is in your PATH."
-        echo "You can now use the tool by running:"
-        echo "  google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>"
-        echo "Or directly with:"
-        echo "  python3 main.py -i <input_dir> -o <output_dir> -e <error_dir>"
-        ;;
-        
-    system)
-        echo "Attempting system-wide installation..."
-        
-        # Try to install with pip first
-        if $PIP_CMD install -r requirements.txt; then
-            $PIP_CMD install -e .
-            echo "System-wide installation complete!"
-        else
-            echo "Pip installation failed. This might be due to an externally managed environment."
-            
-            # Check if apt is available
-            if command -v apt-get &> /dev/null; then
-                echo "Detected apt package manager."
-                read -p "Would you like to install dependencies with apt instead? (y/n) " -n 1 -r
-                echo
-                if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    install_with_apt
-                    $PIP_CMD install -e .
-                else
-                    echo "Installation aborted."
-                    exit 1
-                fi
-            else
-                echo "Error: System-wide installation failed and apt package manager not found."
-                echo "Please try installing with -v/--venv or -u/--user instead."
-                exit 1
-            fi
-        fi
-        
-        echo "You can now use the tool by running:"
-        echo "  google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>"
-        echo "Or directly with:"
-        echo "  python3 main.py -i <input_dir> -o <output_dir> -e <error_dir>"
-        ;;
-esac
-
+echo ""
+echo "Installation complete!"
+echo "You can now use the tool by running:"
+echo "  google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>"
+echo "Or directly with:"
+echo "  python3 main.py -i <input_dir> -o <output_dir> -e <error_dir>"
 echo ""
 echo "For help, run:"
 echo "  google-takeout-fixer -h"

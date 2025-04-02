@@ -212,50 +212,25 @@ The installation scripts will automatically detect and use the appropriate comma
 
 ### Externally Managed Environment
 
-If you encounter an error message like "This environment is externally managed" when running the installation script, it means your Python environment is managed by the system package manager (common on Linux distributions like Ubuntu). You have several options:
+If you encounter an error message like "This environment is externally managed" when running the installation script on Debian/Ubuntu systems, you have two simple options:
 
-1. **Use a virtual environment (recommended):**
-   
-   On Debian/Ubuntu systems, you need to install both the python3-venv package for your specific Python version AND python3-full:
-   ```bash
-   # For Python 3.11 (replace with your Python version):
-   sudo apt install python3.11-venv python3-full
-   
-   # Or if you're not sure of your Python version:
-   python3 -c 'import sys; print(f"sudo apt install python3.{sys.version_info.minor}-venv python3-full")'
-   ```
-   
-   Both packages are required because:
-   - `python3.x-venv` provides the venv module for your specific Python version
-   - `python3-full` provides the ensurepip module needed to install packages in the virtual environment
-   
-   Then create and use the virtual environment:
-   ```bash
-   ./install.sh --venv
-   ```
-   
-   After installation, you'll need to activate the environment before using the tool:
-   ```bash
-   source venv/bin/activate
-   google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>
-   ```
-
-2. **Install in user space:**
-   ```bash
-   ./install.sh --user
-   ```
-   This installs the package in your home directory without affecting the system Python.
-
-3. **Install dependencies with the system package manager:**
+1. **Install dependencies with the system package manager (recommended):**
    ```bash
    sudo apt install python3-piexif python3-tqdm python3-colorama
    ```
-   Then install the package:
+   Then run the script directly:
    ```bash
-   ./install.sh
+   python3 main.py -i <input_dir> -o <output_dir> -e <error_dir>
    ```
 
-The updated installation script provides these options automatically and will guide you through the process.
+2. **Force pip installation (use with caution):**
+   ```bash
+   pip3 install --break-system-packages -r requirements.txt
+   pip3 install --break-system-packages -e .
+   ```
+   This bypasses the system protection, which may cause conflicts with system packages.
+
+The installation script will provide these suggestions if it encounters the "externally managed environment" error.
 
 ## Usage
 
