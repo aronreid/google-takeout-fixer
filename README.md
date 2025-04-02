@@ -216,14 +216,18 @@ If you encounter an error message like "This environment is externally managed" 
 
 1. **Use a virtual environment (recommended):**
    
-   On Debian/Ubuntu systems, you may need to install the python3-venv package first:
+   On Debian/Ubuntu systems, you need to install both the python3-venv package for your specific Python version AND python3-full:
    ```bash
-   sudo apt install python3-venv
-   # Or for a specific Python version:
-   sudo apt install python3.11-venv  # Replace with your Python version
-   # You may also need:
-   sudo apt install python3-full
+   # For Python 3.11 (replace with your Python version):
+   sudo apt install python3.11-venv python3-full
+   
+   # Or if you're not sure of your Python version:
+   python3 -c 'import sys; print(f"sudo apt install python3.{sys.version_info.minor}-venv python3-full")'
    ```
+   
+   Both packages are required because:
+   - `python3.x-venv` provides the venv module for your specific Python version
+   - `python3-full` provides the ensurepip module needed to install packages in the virtual environment
    
    Then create and use the virtual environment:
    ```bash

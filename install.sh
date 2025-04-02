@@ -122,40 +122,50 @@ case $INSTALL_MODE in
     venv)
         echo "Installing in a virtual environment..."
         
-        # Check if venv module is available and try to install it if needed
-        if ! python3 -c "import venv" &> /dev/null; then
-            echo "Python venv module not found. Trying to install it..."
+        # Check for required packages for virtual environment
+        PYTHON_MAJOR=$(python3 -c 'import sys; print(sys.version_info.major)')
+        PYTHON_MINOR=$(python3 -c 'import sys; print(sys.version_info.minor)')
+        PYTHON_VERSION="$PYTHON_MAJOR.$PYTHON_MINOR"
+        
+        echo "Checking for required packages for Python $PYTHON_VERSION virtual environment..."
+        
+        # Check if we can create a virtual environment
+        if ! python3 -m venv --help &> /dev/null || ! python3 -c "import ensurepip" &> /dev/null; then
+            echo "Python virtual environment packages are missing."
             
             if command -v apt-get &> /dev/null; then
-                echo "Detected apt package manager. Installing python3-venv..."
+                echo "Detected apt package manager. Installing required packages..."
                 sudo apt-get update
                 
-                # Try to install the specific version first
-                PYTHON_MINOR=$(python3 -c 'import sys; print(sys.version_info.minor)')
-                if ! sudo apt-get install -y python3.$PYTHON_MINOR-venv; then
-                    echo "Failed to install python3.$PYTHON_MINOR-venv, trying generic python3-venv..."
-                    if ! sudo apt-get install -y python3-venv; then
-                        echo "Failed to install python3-venv. Trying to install python3-full..."
-                        if ! sudo apt-get install -y python3-full; then
-                            echo "Error: Failed to install required packages for virtual environment."
-                            echo "Please install them manually:"
-                            echo "    sudo apt install python3-venv python3-full"
-                            echo "Or try a different installation mode:"
-                            echo "    ./install.sh --user"
-                            exit 1
-                        fi
+                echo "Installing python$PYTHON_VERSION-venv and python3-full..."
+                if ! sudo apt-get install -y python$PYTHON_VERSION-venv python3-full; then
+                    echo "Failed to install specific version packages."
+                    echo "Trying generic packages..."
+                    if ! sudo apt-get install -y python3-venv python3-full; then
+                        echo ""
+                        echo "ERROR: Failed to install required packages for virtual environment."
+                        echo ""
+                        echo "Please install them manually with:"
+                        echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
+                        echo ""
+                        echo "Or try installing in user space instead:"
+                        echo "    ./install.sh --user"
+                        echo ""
+                        exit 1
                     fi
                 fi
+                
+                echo "Required packages installed. Proceeding with virtual environment creation."
             else
-                echo "Error: Python venv module is not available and couldn't be installed automatically."
-                echo "Please install it manually or try a different installation mode."
-                exit 1
-            fi
-            
-            # Verify venv is now available
-            if ! python3 -c "import venv" &> /dev/null; then
-                echo "Error: Python venv module is still not available after installation attempts."
-                echo "Please try installing it manually or use a different installation mode."
+                echo ""
+                echo "ERROR: Required packages for virtual environment are not available."
+                echo ""
+                echo "On Debian/Ubuntu systems, install them with:"
+                echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
+                echo ""
+                echo "Or try installing in user space instead:"
+                echo "    ./install.sh --user"
+                echo ""
                 exit 1
             fi
         fi
@@ -163,10 +173,17 @@ case $INSTALL_MODE in
         # Create virtual environment
         echo "Creating virtual environment..."
         if ! python3 -m venv venv; then
-            echo "Error: Failed to create virtual environment despite having the venv module."
-            echo "This might be due to missing additional packages or permissions issues."
-            echo "Please try a different installation mode:"
+            echo ""
+            echo "ERROR: Failed to create virtual environment."
+            echo ""
+            echo "This might be due to missing packages or permissions issues."
+            echo ""
+            echo "On Debian/Ubuntu systems, make sure you have installed:"
+            echo "    sudo apt install python$PYTHON_VERSION-venv python3-full"
+            echo ""
+            echo "Alternatively, try installing in user space instead:"
             echo "    ./install.sh --user"
+            echo ""
             exit 1
         fi
         
