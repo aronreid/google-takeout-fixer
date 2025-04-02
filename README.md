@@ -210,6 +210,39 @@ This tool is designed for Python 3. If you have both Python 2 and Python 3 insta
 
 The installation scripts will automatically detect and use the appropriate commands for your system.
 
+### Externally Managed Environment
+
+If you encounter an error message like "This environment is externally managed" when running the installation script, it means your Python environment is managed by the system package manager (common on Linux distributions like Ubuntu). You have several options:
+
+1. **Use a virtual environment (recommended):**
+   ```bash
+   ./install.sh --venv
+   ```
+   This creates an isolated environment for the tool and its dependencies.
+   
+   After installation, you'll need to activate the environment before using the tool:
+   ```bash
+   source venv/bin/activate
+   google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>
+   ```
+
+2. **Install in user space:**
+   ```bash
+   ./install.sh --user
+   ```
+   This installs the package in your home directory without affecting the system Python.
+
+3. **Install dependencies with the system package manager:**
+   ```bash
+   sudo apt install python3-piexif python3-tqdm python3-colorama
+   ```
+   Then install the package:
+   ```bash
+   ./install.sh
+   ```
+
+The updated installation script provides these options automatically and will guide you through the process.
+
 ## Usage
 
 ### Option 1: Run the script directly
