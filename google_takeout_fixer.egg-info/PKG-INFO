@@ -1,3 +1,28 @@
+Metadata-Version: 2.4
+Name: google-takeout-fixer
+Version: 1.0.0
+Summary: A high-performance Python tool to fix metadata in Google Takeout exports
+Home-page: https://github.com/yourusername/google-takeout-fixer
+Author: Google Takeout Fixer Contributors
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: piexif==1.1.3
+Requires-Dist: tqdm==4.66.1
+Requires-Dist: colorama==0.4.6
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # Google Takeout Fixer
 
 A high-performance Python tool to fix metadata in Google Takeout exports, including restoring proper EXIF data and file timestamps.
@@ -212,7 +237,26 @@ The installation scripts will automatically detect and use the appropriate comma
 
 ## Usage
 
-### Option 1: Run the script directly
+### Option 1: Use the interactive run scripts (Recommended for beginners)
+
+The project includes interactive scripts that guide you through running the tool:
+
+**On Windows:**
+```bash
+run.bat
+```
+
+**On Linux/macOS:**
+```bash
+./run.sh
+```
+
+These scripts will:
+1. Check if the tool is installed, and install it if needed
+2. Prompt you for the input, output, and error directories
+3. Run the tool with the provided parameters
+
+### Option 2: Run the script directly
 
 ```bash
 # Run from the root directory
@@ -221,7 +265,7 @@ python main.py -i <input_dir> -o <output_dir> -e <error_dir>
 
 This method uses the main.py file in the root directory, which is a simple wrapper that calls the main function in the src/main.py module.
 
-### Option 2: Use the installed command (if installed as a package)
+### Option 3: Use the installed command (if installed as a package)
 
 ```bash
 google-takeout-fixer -i <input_dir> -o <output_dir> -e <error_dir>

@@ -1,0 +1,2 @@
+[console_scripts]
+google-takeout-fixer = src.main:main_cli
