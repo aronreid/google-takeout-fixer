@@ -34,9 +34,13 @@ fi
 
 # Install dependencies
 echo "Installing dependencies..."
-if ! $PIP_CMD install -r requirements.txt; then
+# Capture the output of pip install
+PIP_OUTPUT=$($PIP_CMD install -r requirements.txt 2>&1)
+PIP_EXIT_CODE=$?
+
+if [ $PIP_EXIT_CODE -ne 0 ]; then
     # Check if this is an "externally managed environment" error
-    if $IS_DEBIAN && [ -f /usr/lib/python3/dist-packages/EXTERNALLY-MANAGED ]; then
+    if $IS_DEBIAN && echo "$PIP_OUTPUT" | grep -q "externally-managed-environment"; then
         echo "Detected 'externally managed environment' on Debian/Ubuntu system."
         echo "Attempting to install dependencies with apt..."
         
@@ -56,6 +60,8 @@ if ! $PIP_CMD install -r requirements.txt; then
             exit 1
         fi
     else
+        # Print the original error
+        echo "$PIP_OUTPUT"
         echo ""
         echo "Error: Failed to install dependencies."
         echo ""
@@ -73,9 +79,13 @@ fi
 
 # Install the package
 echo "Installing the package..."
-if ! $PIP_CMD install -e .; then
+# Capture the output of pip install
+PIP_OUTPUT=$($PIP_CMD install -e . 2>&1)
+PIP_EXIT_CODE=$?
+
+if [ $PIP_EXIT_CODE -ne 0 ]; then
     # Check if this is an "externally managed environment" error on Debian
-    if $IS_DEBIAN && [ -f /usr/lib/python3/dist-packages/EXTERNALLY-MANAGED ]; then
+    if $IS_DEBIAN && echo "$PIP_OUTPUT" | grep -q "externally-managed-environment"; then
         echo "Detected 'externally managed environment' on Debian/Ubuntu system."
         echo "Note: The package will not be installed as a command-line tool."
         echo "You can still run the tool directly with: python3 main.py"
@@ -92,6 +102,8 @@ if ! $PIP_CMD install -e .; then
         # Don't exit with error since we're providing an alternative
         PACKAGE_INSTALLED=false
     else
+        # Print the original error
+        echo "$PIP_OUTPUT"
         echo ""
         echo "Error: Failed to install the package."
         echo ""
