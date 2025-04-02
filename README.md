@@ -2,6 +2,11 @@
 
 A high-performance Python tool to fix metadata in Google Takeout exports, including restoring proper EXIF data and file timestamps.
 
+## Simple Usage
+1. Download takeout files from google and uncompress them into a single Takeout folder
+2. Install the script (windows / macos / linux)
+3. Run main.py with the appropirate flags
+
 ## Description
 
 This tool processes Google Photos Takeout data to restore proper EXIF metadata and file timestamps. It extracts all photo/video files from your Google Photos Takeout and places them into an output directory while:
