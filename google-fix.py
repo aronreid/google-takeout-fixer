@@ -340,7 +340,8 @@ def process_media_file(media_file: Dict[str, Any], output_dir: str, error_dir: s
     result = {
         'success': False,
         'dates_updated': False,
-        'error': None
+        'error': None,
+        'has_metadata': False
     }
     
     try:
@@ -358,6 +359,7 @@ def process_media_file(media_file: Dict[str, Any], output_dir: str, error_dir: s
         # Read the photo taken time from the JSON metadata
         time_taken = None
         if media_file['json_path']:
+            result['has_metadata'] = True
             time_taken = read_photo_taken_time(media_file['json_path'])
         
         # Update the file dates if we have a time taken
@@ -426,6 +428,7 @@ def main():
     success_count = 0
     error_count = 0
     dates_updated_count = 0
+    no_metadata_count = 0
     
     # Initial progress bar
     print_progress_bar(0, len(media_files))
@@ -455,6 +458,8 @@ def main():
                     success_count += 1
                     if result.get('dates_updated', False):
                         dates_updated_count += 1
+                    if not result.get('has_metadata', False):
+                        no_metadata_count += 1
                 else:
                     error_count += 1
                     if result['error']:
@@ -479,6 +484,7 @@ def main():
     print(f"{Colors.BOLD}Total files processed:{Colors.ENDC} {len(media_files)}")
     print(f"{Colors.GREEN}Successfully processed:{Colors.ENDC} {success_count}")
     print(f"{Colors.BLUE}Files with dates updated:{Colors.ENDC} {dates_updated_count}")
+    print(f"{Colors.YELLOW}Files without metadata:{Colors.ENDC} {no_metadata_count}")
     print(f"{Colors.RED}Errors:{Colors.ENDC} {error_count}")
     print(f"\n{Colors.BOLD}Output directory:{Colors.ENDC} {output_dir}")
     print(f"{Colors.BOLD}Error directory:{Colors.ENDC} {error_dir}")
