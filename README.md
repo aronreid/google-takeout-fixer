@@ -23,6 +23,8 @@ When you download your photos from Google Photos using Google Takeout, the file 
 - Python 3.6+
 - pywin32 (for Windows file date handling only)
 
+# NOTE: Ensure all files are extracted into a SINGLE folder called Takeout.  Not many smaller files.  I used 7ZIP for this, highlight them all and click extract here.  
+
 ## Installation
 
 ### Windows
