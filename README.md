@@ -6,6 +6,8 @@ A tool to fix file dates in Google Takeout exports, particularly for Google Phot
 
 When you download your photos from Google Photos using Google Takeout, the file creation and modification dates are set to the date of the download, not the date the photo was taken. This tool fixes that by reading the metadata from the JSON files that accompany each photo and setting the file dates accordingly.
 
+![alt text](https://github.com/aronreid/google-takeout-fixer/blob/main/screenshot.png)
+
 ## Features
 
 - Processes Google Photos Takeout folders
