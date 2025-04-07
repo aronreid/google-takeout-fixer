@@ -10,10 +10,11 @@ When you download your photos from Google Photos using Google Takeout, the file 
 
 - Processes Google Photos Takeout folders
 - Fixes file creation and modification dates based on JSON metadata
-- Supports a wide range of media file types
+- Supports a wide range of media file types (see [Supported File Types](#supported-file-types))
 - Handles Windows and non-Windows platforms differently
 - Provides progress reporting with a progress bar
 - Parallel processing support for faster operation on SSD/NVMe drives
+- Tracks and reports files without metadata
 
 ## Requirements
 
@@ -76,10 +77,10 @@ Thread count recommendations:
 
 ```bash
 # Basic usage with default thread count (1)
-python google-fix.py -i "~/Takeout 10gb Feb 12" -o "~/complete/take 14" -e "~/error"
+python google-fix.py -i "/mnt/photos/Takeout" -o "/mnt/photos/Output" -e "/mnt/photos/Output/errors"
 
 # Using 4 threads for faster processing on an SSD
-python google-fix.py -i "~/Takeout 10gb Feb 12" -o "~/complete/take 14" -e "~/error" -p 4
+python google-fix.py -i "/mnt/photos/Takeout" -o "/mnt/photos/Output" -e "/mnt/photos/Output/errors" -p 4
 ```
 
 ### Windows PowerShell Examples
@@ -155,3 +156,32 @@ The script supports various JSON metadata file naming patterns found in Google T
 - file.jpg.suppl.json
 - file.mp4.supplemental-metadata.json
 - file.json (where file is without extension)
+
+## Supported File Types
+
+The script processes the following file types commonly found in Google Photos Takeout exports:
+
+### Image Formats
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- GIF (.gif)
+- HEIC (.heic) - High Efficiency Image Format used by newer iPhones
+
+### Video Formats
+- MP4 (.mp4)
+- QuickTime (.mov)
+- AVI (.avi)
+- Matroska (.mkv)
+
+### RAW Image Formats
+- Nikon RAW (.nef)
+- Adobe Digital Negative (.dng)
+- Generic RAW (.raw)
+- Canon RAW (.cr2, .cr3)
+- Sony RAW (.arw)
+- Olympus RAW (.orf)
+- Panasonic RAW (.rw2)
+- Pentax RAW (.pef)
+- Fujifilm RAW (.raf)
+
+If you have files in other formats that aren't being processed, please open an issue on GitHub.
