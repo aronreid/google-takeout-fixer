@@ -1,7 +1,6 @@
 @echo off
-REM Simple installation script for Google Takeout Fixer
-
-echo Installing Google Takeout Fixer...
+echo Google Takeout Fix - Installation Script
+echo ======================================
 echo.
 
 REM Check if Python is installed
@@ -28,24 +27,12 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Install dependencies
-echo Installing dependencies...
-python -m pip install -r requirements.txt
+REM Install pywin32 (required for Windows file date handling)
+echo Installing pywin32...
+python -m pip install pywin32>=223
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo Error: Failed to install dependencies.
-    echo.
-    echo If you're having permission issues, try running the command prompt as administrator.
-    pause
-    exit /b 1
-)
-
-REM Install the package
-echo Installing the package...
-python -m pip install -e .
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo Error: Failed to install the package.
+    echo Error: Failed to install pywin32.
     echo.
     echo If you're having permission issues, try running the command prompt as administrator.
     pause
@@ -54,13 +41,12 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Installation complete!
-echo You can now use the tool by running:
-echo   google-takeout-fixer -i ^<input_dir^> -o ^<output_dir^> -e ^<error_dir^>
-echo Or directly with:
-echo   python main.py -i ^<input_dir^> -o ^<output_dir^> -e ^<error_dir^>
 echo.
-echo For help, run:
-echo   google-takeout-fixer -h
-echo   python main.py -h
+echo You can now use the tool by running:
+echo   python google-fix.py -i "input_folder" -o "output_folder" -e "error_folder"
+echo.
+echo Example:
+echo   python google-fix.py -i "E:\Takeout 10gb Feb 12" -o "E:\complete\take 14" -e "E:\error"
+echo.
 
 pause
