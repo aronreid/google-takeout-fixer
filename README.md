@@ -55,6 +55,8 @@ Note: pywin32 is only required for Windows systems.
 
 ## Usage
 
+### Basic Usage
+
 ```bash
 python google-fix.py -i "input_folder" -o "output_folder" -e "error_folder" [-p threads]
 ```
@@ -62,7 +64,7 @@ python google-fix.py -i "input_folder" -o "output_folder" -e "error_folder" [-p 
 Parameters:
 - `-i, --input-dir`: Directory containing the extracted contents of Google Photos Takeout
 - `-o, --output-dir`: Directory into which the processed output will be written
-- `-e, --error-dir`: Directory for any files that have errors during processing
+- `-e, --error-dir`: Directory for any files that have errors during processing (IMPORTANT: use -e, not -o)
 - `-p, --parallel`: Number of parallel processes to use (default: 1)
 
 Thread count recommendations:
@@ -70,7 +72,8 @@ Thread count recommendations:
 - 4 threads: Good for quad-core systems with an SSD
 - 8 threads: Good for octa-core systems with an NVMe drive
 
-Examples:
+### Linux/Mac Examples
+
 ```bash
 # Basic usage with default thread count (1)
 python google-fix.py -i "~/Takeout 10gb Feb 12" -o "~/complete/take 14" -e "~/error"
@@ -78,6 +81,25 @@ python google-fix.py -i "~/Takeout 10gb Feb 12" -o "~/complete/take 14" -e "~/er
 # Using 4 threads for faster processing on an SSD
 python google-fix.py -i "~/Takeout 10gb Feb 12" -o "~/complete/take 14" -e "~/error" -p 4
 ```
+
+### Windows PowerShell Examples
+
+In PowerShell, you MUST use the equals sign format with no space between flag and path:
+
+```powershell
+# Basic usage with default thread count (1)
+python .\google-fix.py -i="D:\Takeout Files" -o="D:\Finished Files" -e="D:\Error Files"
+
+# Using 4 threads for faster processing on an SSD
+python .\google-fix.py -i="D:\Takeout Files" -o="D:\Finished Files" -e="D:\Error Files" -p=4
+```
+
+> **IMPORTANT NOTES FOR POWERSHELL USERS**: 
+> 1. Always use the equals sign format (`-flag=value`) without spaces
+> 2. Do not include trailing backslashes in your paths
+> 3. Make sure to use `-e` for the error directory, not `-o`
+> 4. The script requires three separate directories specified with `-i`, `-o`, and `-e`
+> 5. Double quotes are recommended for paths with spaces
 
 
 ## Architecture
