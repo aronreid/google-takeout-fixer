@@ -117,6 +117,18 @@ if ! $PYTHON_CMD -m pip --version &> /dev/null; then
     install_pip "$PKG_MANAGER"
 fi
 
+# Install Pillow (required for GPS data handling)
+echo "Installing Pillow for GPS data handling..."
+$PYTHON_CMD -m pip install Pillow
+
+# Check if Pillow installation was successful
+if ! $PYTHON_CMD -c "import PIL" &> /dev/null; then
+    echo "Warning: Failed to install Pillow. GPS data handling will be disabled."
+    echo "If you want GPS data handling, try manually installing Pillow with:"
+    echo "  $PYTHON_CMD -m pip install Pillow"
+    echo
+fi
+
 echo
 echo "Installation complete!"
 echo

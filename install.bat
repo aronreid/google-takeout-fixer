@@ -39,6 +39,20 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
+REM Install Pillow (required for GPS data handling)
+echo Installing Pillow...
+python -m pip install Pillow
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo Warning: Failed to install Pillow.
+    echo GPS data handling will be disabled.
+    echo.
+    echo If you want GPS data handling, try running the command prompt as administrator
+    echo and manually install Pillow with: python -m pip install Pillow
+    echo.
+    pause
+)
+
 echo.
 echo Installation complete!
 echo.

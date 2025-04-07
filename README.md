@@ -4,7 +4,7 @@ A tool to fix file dates in Google Takeout exports, particularly for Google Phot
 
 ## Overview
 
-When you download your photos from Google Photos using Google Takeout, the file creation and modification dates are set to the date of the download, not the date the photo was taken. This tool fixes that by reading the metadata from the JSON files that accompany each photo and setting the file dates accordingly.
+When you download your photos from Google Photos using Google Takeout, the file creation and modification dates are set to the date of the download, not the date the photo was taken. Additionally, GPS location data and photo descriptions may not be properly transferred to the image files. This tool fixes these issues by reading the metadata from the JSON files that accompany each photo and updating the files accordingly.
 
 ![alt text](https://github.com/aronreid/google-takeout-fixer/blob/main/screenshot.png)
 
@@ -12,16 +12,21 @@ When you download your photos from Google Photos using Google Takeout, the file 
 
 - Processes Google Photos Takeout folders
 - Fixes file creation and modification dates based on JSON metadata
+- Updates GPS location data in image EXIF when missing (ignores invalid 0,0 coordinates)
+- Adds photo descriptions from JSON to image EXIF data
+- Properly handles Apple Live Photos (photo+video pairs)
 - Supports a wide range of media file types (see [Supported File Types](#supported-file-types))
 - Handles Windows and non-Windows platforms differently
 - Provides progress reporting with a progress bar
 - Parallel processing support for faster operation on SSD/NVMe drives
-- Tracks and reports files without metadata
+- Debug mode to copy problematic files to a separate directory for inspection
+- Comprehensive summary reporting of all operations performed
 
 ## Requirements
 
 - Python 3.6+
 - pywin32 (for Windows file date handling only)
+- Pillow (for GPS and description metadata handling)
 
 # NOTE: Ensure all files are extracted into a SINGLE folder called Takeout.  Not many smaller files.  I used 7ZIP for this, highlight them all and click extract here.  
 
@@ -63,7 +68,7 @@ Note: pywin32 is only required for Windows systems.
 ### Basic Usage
 
 ```bash
-python google-fix.py -i "input_folder" -o "output_folder" -e "error_folder" [-p threads]
+python google-fix.py -i "input_folder" -o "output_folder" -e "error_folder" [-p threads] [-d]
 ```
 
 Parameters:
@@ -71,6 +76,7 @@ Parameters:
 - `-o, --output-dir`: Directory into which the processed output will be written
 - `-e, --error-dir`: Directory for any files that have errors during processing (IMPORTANT: use -e, not -o)
 - `-p, --parallel`: Number of parallel processes to use (default: 1)
+- `-d, --debug`: Enable debug mode to copy files without date updates to the error directory
 
 Thread count recommendations:
 - Default (1 thread): Safe for all systems
@@ -123,8 +129,20 @@ graph TD
         G --> H{Has Metadata?}
         H -->|Yes| I[Update File Dates]
         H -->|No| J[Keep Original Dates]
+        
+        G --> GPS{Is Image File?}
+        GPS -->|Yes| GPS1{Has EXIF GPS?}
+        GPS1 -->|No| GPS2{JSON has GPS?}
+        GPS2 -->|Yes| GPS3[Update GPS from JSON]
+        
+        G --> DESC{Is Image File?}
+        DESC -->|Yes| DESC1{JSON has Description?}
+        DESC1 -->|Yes| DESC2[Update Description from JSON]
+        
         I --> K[Add to Success Count]
         J --> K
+        GPS3 --> K
+        DESC2 --> K
     end
     
     C --> L[Process Results]
@@ -152,8 +170,12 @@ graph TD
 3. It reads the photo taken time from the JSON metadata
 4. It copies the media file to the output directory
 5. It updates the file creation and modification dates based on the metadata
-6. If there are any errors, the file is moved to the error directory
-7. After processing, a summary is displayed including a sample file with its original and updated dates
+6. For image files, it checks if GPS data is missing and updates it from JSON if available
+7. For image files, it adds description data from JSON if available
+8. It properly handles companion files (like Apple Live Photos) by applying the same metadata
+9. If there are any errors, the file is moved to the error directory
+10. If debug mode is enabled, files without date updates are copied to the error directory
+11. After processing, a comprehensive summary is displayed showing all operations performed
 
 The script supports various JSON metadata file naming patterns found in Google Takeout exports:
 - file.jpg.json
