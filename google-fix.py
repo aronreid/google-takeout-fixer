@@ -37,6 +37,9 @@ from collections import Counter
 try:
     from PIL import Image
     from PIL.ExifTags import TAGS, GPSTAGS
+    # Increase the maximum image size limit to handle large photos
+    # This prevents DecompressionBombWarning for large images
+    Image.MAX_IMAGE_PIXELS = 933120000  # Increased from default ~89 million to ~933 million
     HAS_PIL = True
 except ImportError:
     HAS_PIL = False

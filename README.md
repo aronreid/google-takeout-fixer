@@ -34,6 +34,11 @@ When you download your photos from Google Photos using Google Takeout, the file 
 - pywin32 (for Windows file date handling only)
 - Pillow (for GPS and description metadata handling)
 
+## Notes
+
+- The script automatically increases Pillow's maximum image size limit to handle very large photos (>89 million pixels) without triggering DecompressionBombWarning errors.
+- If you encounter any other issues with large images, please open an issue on GitHub.
+
 # NOTE: Ensure all files are extracted into a SINGLE folder called Takeout.  Not many smaller files.  I used 7ZIP for this, highlight them all and click extract here.  
 
 ## Installation
