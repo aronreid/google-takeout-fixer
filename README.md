@@ -2,6 +2,12 @@
 
 A tool to fix file dates in Google Takeout exports, particularly for Google Photos.
 
+Just to be absolutly clear, this isnt "required" to fix EXIF data.  When google takeout works on photos your files contain all the metadata they had when you uploaded them.  If you directly import your takeout files into a photo tool like Lightroom, etc... it will read the correct dates.  
+
+**What Doesnt Work** is that Windows / Mac / Linux look at the files creation date and not the EXIF data.  When you do a takeout the file is "created" when its taken out or unzipped.  This this fixes it back to the original dates the file was made.  Also it will import GPS information if it was added in Google Photos (and not in the original file uploaded).  
+
+Also regarding "albums" the way the takeout files work is by albums by design.  So thats not really a needed feature unless its missing something.  
+
 ## Overview
 
 When you download your photos from Google Photos using Google Takeout, the file creation and modification dates are set to the date of the download, not the date the photo was taken. Additionally, GPS location data and photo descriptions may not be properly transferred to the image files. This tool fixes these issues by reading the metadata from the JSON files that accompany each photo and updating the files accordingly.
