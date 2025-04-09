@@ -417,7 +417,7 @@ def find_media_files(input_dir: str) -> List[Dict[str, Any]]:
     }
     
     # Apple Live Photo companion extensions (photo + video pairs)
-    # Common pairs: HEIC+MP4, JPG+MOV, etc.
+    # Common pairs: HEIC+MP4, JPG+MOV, JPG+MP4, etc.
     photo_extensions = {'.heic', '.jpg', '.jpeg'}
     video_extensions = {'.mp4', '.mov'}
     
@@ -485,6 +485,8 @@ def find_media_files(input_dir: str) -> List[Dict[str, Any]]:
     
     # Third pass: identify companion files (Apple Live Photos)
     companion_count = 0
+    
+    # First, identify companions with exact base name matches
     for base_name, file_paths in base_name_map.items():
         if len(file_paths) > 1:  # Potential companion files found
             # Group by extension type
@@ -515,6 +517,93 @@ def find_media_files(input_dir: str) -> List[Dict[str, Any]]:
                             all_files_dict[path]['is_companion'] = True
                             all_files_dict[path]['companion_path'] = primary_path
                             companion_count += 1
+    
+    # Second, look for companions with similar base names and close timestamps
+    # This handles cases where the naming convention might be slightly different
+    # or timestamps in filenames are slightly off
+    
+    # Group files by their directory
+    files_by_dir = {}
+    for file_path, file_info in all_files_dict.items():
+        # Skip files that are already identified as companions
+        if file_info['is_companion']:
+            continue
+        
+        dir_path = os.path.dirname(file_path)
+        if dir_path not in files_by_dir:
+            files_by_dir[dir_path] = []
+        files_by_dir[dir_path].append(file_path)
+    
+    # For each directory, look for potential companions
+    for dir_path, file_paths in files_by_dir.items():
+        # Group files by extension type
+        photos = []
+        videos = []
+        
+        for path in file_paths:
+            ext = os.path.splitext(path)[1].lower()
+            if ext in photo_extensions:
+                photos.append(path)
+            elif ext in video_extensions:
+                videos.append(path)
+        
+        # Skip if we don't have both photos and videos in this directory
+        if not photos or not videos:
+            continue
+        
+        # For each photo, look for a potential video companion
+        for photo_path in photos:
+            # Skip if this photo is already a companion
+            if all_files_dict[photo_path]['is_companion']:
+                continue
+            
+            photo_base = os.path.basename(photo_path)
+            photo_base_no_ext = os.path.splitext(photo_base)[0]
+            
+            # Get photo timestamp from JSON if available
+            photo_time = None
+            if all_files_dict[photo_path]['json_path']:
+                photo_time = read_photo_taken_time(all_files_dict[photo_path]['json_path'])
+            
+            # If we don't have a timestamp, skip this photo
+            if not photo_time:
+                continue
+            
+            # Convert ISO format to datetime
+            photo_dt = datetime.fromisoformat(photo_time)
+            
+            # For each video, check if it's a potential companion
+            for video_path in videos:
+                # Skip if this video is already a companion
+                if all_files_dict[video_path]['is_companion']:
+                    continue
+                
+                video_base = os.path.basename(video_path)
+                video_base_no_ext = os.path.splitext(video_base)[0]
+                
+                # Check if the base names are similar
+                # This handles cases like IMG_1234.jpg and IMG_1234_01.MP4
+                # or IMG_1234.jpg and IMG_1235.MP4
+                
+                # Simple case: one is a prefix of the other
+                if video_base_no_ext.startswith(photo_base_no_ext) or photo_base_no_ext.startswith(video_base_no_ext):
+                    # Get video timestamp from JSON if available
+                    video_time = None
+                    if all_files_dict[video_path]['json_path']:
+                        video_time = read_photo_taken_time(all_files_dict[video_path]['json_path'])
+                    
+                    # If we have timestamps for both, check if they're close
+                    if video_time:
+                        video_dt = datetime.fromisoformat(video_time)
+                        time_diff = abs((video_dt - photo_dt).total_seconds())
+                        
+                        # If timestamps are within 5 seconds, consider them companions
+                        if time_diff <= 5:
+                            # Mark video as companion and link to photo
+                            all_files_dict[video_path]['is_companion'] = True
+                            all_files_dict[video_path]['companion_path'] = photo_path
+                            companion_count += 1
+                            break  # Found a companion for this photo, move to next
     
     # Convert dictionary to list for return
     media_files = list(all_files_dict.values())
