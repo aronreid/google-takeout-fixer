@@ -20,7 +20,11 @@ When you download your photos from Google Photos using Google Takeout, the file 
 - Fixes file creation and modification dates based on JSON metadata
 - Updates GPS location data in image EXIF when missing (ignores invalid 0,0 coordinates)
 - Adds photo descriptions from JSON to image EXIF data
-- Properly handles Apple Live Photos (photo+video pairs)
+- Advanced handling of Apple Live Photos and Google Live Photos (photo+video pairs)
+  - Enhanced companion file detection across multiple formats (MP4/MOV, JPG/JPEG)
+  - Ensures both parts of Live Photos have matching dates
+  - Post-processing step to synchronize dates between companion files
+- Single file debugging mode to diagnose issues with specific files
 - Supports a wide range of media file types (see [Supported File Types](#supported-file-types))
 - Handles Windows and non-Windows platforms differently
 - Provides progress reporting with a progress bar
@@ -88,6 +92,9 @@ Parameters:
 - `-e, --error-dir`: Directory for any files that have errors during processing (IMPORTANT: use -e, not -o)
 - `-p, --parallel`: Number of parallel processes to use (default: 1)
 - `-d, --debug`: Enable debug mode to copy files without date updates to the error directory
+- `-s, --single-file`: Process only a single file (for debugging purposes)
+- `-q, --quiet`: Reduce verbosity of output messages (only show critical errors and summary)
+- `-u, --force-utc`: Force UTC timezone for all timestamps (useful if timestamps are in UTC but not marked as such)
 
 Thread count recommendations:
 - Default (1 thread): Safe for all systems
@@ -102,6 +109,9 @@ python google-fix.py -i "/mnt/photos/Takeout" -o "/mnt/photos/Output" -e "/mnt/p
 
 # Using 4 threads for faster processing on an SSD
 python google-fix.py -i "/mnt/photos/Takeout" -o "/mnt/photos/Output" -e "/mnt/photos/Output/errors" -p 4
+
+# Debug a specific file (useful for troubleshooting)
+python google-fix.py -i "/mnt/photos/Takeout" -o "/mnt/photos/Output" -e "/mnt/photos/Output/errors" -s "IMG_0147.MP4" -d
 ```
 
 ### Windows PowerShell Examples
@@ -114,6 +124,9 @@ python .\google-fix.py -i="D:\Takeout Files" -o="D:\Finished Files" -e="D:\Error
 
 # Using 4 threads for faster processing on an SSD
 python .\google-fix.py -i="D:\Takeout Files" -o="D:\Finished Files" -e="D:\Error Files" -p=4
+
+# Debug a specific file (useful for troubleshooting)
+python .\google-fix.py -i="D:\Takeout Files" -o="D:\Finished Files" -e="D:\Error Files" -s="IMG_0147.MP4" -d
 ```
 
 > **IMPORTANT NOTES FOR POWERSHELL USERS**: 
@@ -183,10 +196,15 @@ graph TD
 5. It updates the file creation and modification dates based on the metadata
 6. For image files, it checks if GPS data is missing and updates it from JSON if available
 7. For image files, it adds description data from JSON if available
-8. It properly handles companion files (like Apple Live Photos) by applying the same metadata
-9. If there are any errors, the file is moved to the error directory
-10. If debug mode is enabled, files without date updates are copied to the error directory
-11. After processing, a comprehensive summary is displayed showing all operations performed
+8. For Apple Live Photos and Google Live Photos:
+   - Identifies companion relationships between image and video files
+   - For video files without metadata, looks for companion image files with metadata
+   - Handles multiple file formats (MP4/MOV, JPG/JPEG) with the same base name
+   - Applies the same metadata to all components of a Live Photo
+9. After processing all files, performs a post-processing step to ensure all companion files have matching dates
+10. If there are any errors, the file is moved to the error directory
+11. If debug mode is enabled, files without date updates are copied to the error directory
+12. After processing, a comprehensive summary is displayed showing all operations performed
 
 The script supports various JSON metadata file naming patterns found in Google Takeout exports:
 - file.jpg.json
